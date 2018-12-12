@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -88,33 +89,74 @@ public class Grid implements Iterable<Cell> {
         return numberOfColumns;
     }
 
-
-    // TODO: Écrire une version correcte de cette méthode.
     private List<Cell> getNeighbours(int rowIndex, int columnIndex) {
-        return null;
+        List<Cell> neighbours = new ArrayList<>();
+        neighbours.add(getCell(rowIndex-1, columnIndex));
+        neighbours.add(getCell(rowIndex-1, columnIndex-1));
+        neighbours.add(getCell(rowIndex, columnIndex-1));
+        neighbours.add(getCell(rowIndex, columnIndex+1));
+        neighbours.add(getCell(rowIndex+1, columnIndex));
+        neighbours.add(getCell(rowIndex-1, columnIndex+1));
+        neighbours.add(getCell(rowIndex+1, columnIndex-1));
+        neighbours.add(getCell(rowIndex+1, columnIndex+1));
+        return neighbours;
     }
 
-    // TODO: Écrire une version correcte de cette méthode.
     private int countAliveNeighbours(int rowIndex, int columnIndex) {
-        return 0;
+        int alive = 0;
+        for(Cell i : getNeighbours(rowIndex, columnIndex)){
+            if (i.isAlive()){
+                alive = alive + 1;
+            }
+        }
+        return alive;
     }
 
-    // TODO: Écrire une version correcte de cette méthode.
     private CellState calculateNextState(int rowIndex, int columnIndex) {
-        return null;
+        int nbVivantes = countAliveNeighbours(rowIndex, columnIndex);
+        boolean alive = getCell(rowIndex, columnIndex).isAlive();
+        if (!alive && nbVivantes == 3){
+            int red = 0;
+            int blue = 0;
+            for(Cell cell : getNeighbours(rowIndex, columnIndex)){
+                if (cell.getState() == CellState.RED){
+                    red = red + 1;
+                }
+                else if(cell.getState() == CellState.BLUE){
+                    blue = blue + 1;
+                }
+            }
+            if (red > blue){
+                return CellState.RED;
+            }
+            else {
+                return CellState.BLUE;
+            }
+        }
+        else if (alive && nbVivantes > 3 || alive && nbVivantes < 2){
+            return CellState.DEAD;
+        }
+        else {
+            return getCell(rowIndex, columnIndex).getState();
+        }
     }
 
-
-
-    // TODO: Écrire une version correcte de cette méthode.
     private CellState[][] calculateNextStates() {
         CellState[][] nextCellState = new CellState[getNumberOfRows()][getNumberOfColumns()];
+        for(int i = 0; i <= getNumberOfRows()-1; i++){
+            for(int j = 0; j <= getNumberOfColumns()-1; j++){
+                nextCellState[i][j] = calculateNextState(i, j);
+            }
+        }
         return nextCellState;
     }
 
-    // TODO: Écrire une version correcte de cette méthode.
     private void updateStates(CellState[][] nextState) {
-
+        for(int i = 0; i <= getNumberOfRows()-1; i++){
+            for(int j = 0; j <= getNumberOfColumns()-1; j++){
+                getCell(i, j).setState(nextState[i][j]);
+            }
+        }
     }
 
     /**
@@ -130,17 +172,20 @@ public class Grid implements Iterable<Cell> {
      * reproduction.</li>
      * </ul>
      */
-    // TODO: Écrire une version correcte de cette méthode.
-    void updateToNextGeneration() {
 
+    void updateToNextGeneration() {
+        updateStates(calculateNextStates());
     }
 
     /**
      * Sets all {@link Cell}s in this {@code Grid} as dead.
      */
-    // TODO: Écrire une version correcte de cette méthode.
     void clear() {
-
+        for(int i = 0; i <= getNumberOfRows()-1; i++){
+            for(int j = 0; j <= getNumberOfColumns()-1; j++){
+                getCell(i, j).setState(CellState.DEAD);
+            }
+        }
     }
 
     /**
@@ -149,8 +194,22 @@ public class Grid implements Iterable<Cell> {
      * @param random {@link Random} instance used to decide if each {@link Cell} is ALIVE or DEAD.
      * @throws NullPointerException if {@code random} is {@code null}.
      */
-    // TODO: Écrire une version correcte de cette méthode.
     void randomGeneration(Random random) {
+        for(int i = 0; i <= getNumberOfRows()-1; i++){
+            for(int j = 0; j <= getNumberOfColumns()-1; j++){
+                if (random.nextBoolean()){
+                    if(random.nextBoolean()){
+                        getCell(i, j).setState(CellState.RED);
+                    }
+                    else {
+                        getCell(i, j).setState(CellState.BLUE);
+                    }
 
+                }
+                else {
+                    getCell(i, j).setState(CellState.DEAD);
+                }
+            }
+        }
     }
 }
